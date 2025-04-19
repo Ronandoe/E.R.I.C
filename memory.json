@@ -1,0 +1,9 @@
+
+{
+    "session_1": {
+        "history": [
+            {"user": "Hello", "assistant": "Hi there!"},
+            {"user": "What is E.R.I.C.?", "assistant": "E.R.I.C. is your tactical AI assistant."}
+        ]
+    }
+}
