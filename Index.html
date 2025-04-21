@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   E.R.I.C. Chat
+  </title>
+  <style>
+   body {
+      margin: 0;
+      padding: 0;
+      background-color: #1a1a1a;
+      color: #e0e0e0;
+      font-family: monospace;
+    }
+    #messages {
+      padding: 1em;
+      padding-bottom: 4em;
+    }
+    .message {
+      margin: 0.2em 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+    #chat-form {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #222;
+      border-top: 1px solid #333;
+      display: flex;
+      align-items: center;
+      padding: 0.5em;
+      box-sizing: border-box;
+    }
+    #chat-form input[type="text"] {
+      flex: 1;
+      font: inherit;
+      font-size: 1em;
+      padding: 0.5em;
+      background: #333;
+      border: 1px solid #555;
+      color: #fff;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    #chat-form input[type="text"]:focus {
+      outline: none;
+      border-color: #777;
+    }
+    #chat-form button {
+      font: inherit;
+      font-size: 1em;
+      margin-left: 0.5em;
+      padding: 0.5em 1em;
+      background: #444;
+      border: 1px solid #555;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+    #chat-form button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .error {
+      color: #ff5555;
+    }
+  </style>
+ </head>
+ <body>
+  <div id="messages">
+  </div>
+  <form autocomplete="off" id="chat-form">
+   <input id="chat-input" placeholder="Type a message..." required="" type="text"/>
+   <button type="submit">
+    Send
+   </button>
+  </form>
+  <script>
+   const form = document.getElementById('chat-form');
+    const input = document.getElementById('chat-input');
+    const messagesDiv = document.getElementById('messages');
+
+    // Full chat history array
+    let chatHistory = [];
+
+    function appendMessage(text, className) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'message';
+      if (className) msgDiv.classList.add(className);
+      msgDiv.textContent = text;
+      messagesDiv.appendChild(msgDiv);
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+      const userText = input.value.trim();
+      if (userText === "") return;
+
+      appendMessage("> " + userText, "user");
+      chatHistory.push({ role: "user", content: userText });
+      input.value = "";
+
+      fetch("https://e-r-i-c-backend.onrender.com/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: chatHistory })
+      })
+      .then(response => response.json())
+      .then(data => {
+        let replyText = data.reply || data.response || data.message || JSON.stringify(data);
+        appendMessage(replyText, "bot");
+        chatHistory.push({ role: "assistant", content: replyText });
+      })
+      .catch(error => {
+        console.error("Fetch error:", error);
+        appendMessage("Error: Failed to get response", "error");
+      });
+    });
+  </script>
+ </body>
+</html>
